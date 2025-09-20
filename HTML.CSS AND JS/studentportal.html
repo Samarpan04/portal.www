@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Student Portal</title>
+  <style>
+    :root{
+      --bg: #0b1020;
+      --panel: #121a33;
+      --muted: #99a2c2;
+      --text: #e6ecff;
+      --brand: #6aa3ff;
+      --brand-2:#8fd3ff;
+      --ok: #2ecc71;
+      --warn:#ffb020;
+      --bad:#ff5c5c;
+      --ring: #3357ff44;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      background: radial-gradient(1200px 700px at 80% -10%, #1a2450 0%, #0b1020 45%, #070a15 100%),
+                  radial-gradient(900px 500px at -20% 120%, #10244a 0%, #0b1020 40%, #070a15 100%);
+      color: var(--text);
+      letter-spacing:.2px;
+    }
+    a{color:inherit}
+    .app{display:grid; grid-template-rows: 64px 1fr; min-height:100%}
+    header{
+      position:sticky; top:0; z-index:10; height:64px; display:flex; align-items:center; gap:12px; padding:0 16px;
+      background: linear-gradient(180deg, rgba(5,8,15,.75), rgba(5,8,15,.45)); backdrop-filter: blur(10px);
+      border-bottom:1px solid #2a3358;
+    }
+    .brand{display:flex; align-items:center; gap:12px; flex:1}
+    .logo{width:36px; height:36px; border-radius:12px; background:
+      radial-gradient(160% 100% at 20% 0%, var(--brand-2), var(--brand));
+      box-shadow: inset 0 0 15px #ffffff22, 0 10px 20px #6aa3ff33;
+    }
+    .title{font-weight:800; letter-spacing:.6px}
+    .search{flex:2; display:flex; align-items:center; gap:8px; max-width:520px; width:100%;}
+    .search input{flex:1; height:40px; border-radius:12px; background:#0e1630; border:1px solid #283055; color:var(--text);
+      padding:0 12px}
+    .search input:focus{outline:none; box-shadow:0 0 0 6px var(--ring)}
+    .userbar{display:flex; align-items:center; gap:10px}
+    .btn, button{background:#162147; color:var(--text); border:1px solid #2a3358; height:40px; padding:0 14px; border-radius:12px; cursor:pointer}
+    .btn.primary{background: linear-gradient(180deg, #2758ff, #1f42b8); border: none}
+    .btn.ghost{background:transparent; border-color:#33407a}
+    .btn:focus{outline:none; box-shadow:0 0 0 6px var(--ring)}
+
+    main{display:grid; grid-template-columns: 230px 1fr; gap:16px; padding:16px}
+    nav{
+      position:sticky; top:84px; align-self:start; background:linear-gradient(180deg,#0e1630,#0b1228);
+      border:1px solid #2a3358; border-radius:var(--radius); box-shadow:var(--shadow);
+    }
+    .navlist{list-style:none; margin:0; padding:8px}
+    .navlist li{margin:2px 0}
+    .navbtn{display:flex; align-items:center; gap:10px; width:100%; padding:10px 12px; background:transparent; border:0; color:var(--muted);
+      border-radius:12px; cursor:pointer; text-align:left}
+    .navbtn:hover{background:#131b38; color:var(--text)}
+    .navbtn.active{background:linear-gradient(180deg,#1b2a5c,#17224a); color:var(--text); border:1px solid #4152a0}
+
+    .panel{background:linear-gradient(180deg,#0f1733,#0b1228); border:1px solid #2a3358; border-radius:var(--radius); box-shadow:var(--shadow)}
+    .panel .head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid #243063}
+    .panel .body{padding:16px}
+    .grid{display:grid; gap:16px}
+    .grid.cols-2{grid-template-columns: repeat(2, minmax(0,1fr))}
+    .grid.cols-3{grid-template-columns: repeat(3, minmax(0,1fr))}
+    .grid.cols-4{grid-template-columns: repeat(4, minmax(0,1fr))}
+
+    .kpis{display:grid; gap:16px; grid-template-columns: repeat(4, minmax(0,1fr))}
+    .kpi{background:linear-gradient(180deg,#111a3d,#0f1733); border:1px solid #2a3358; padding:14px; border-radius:14px}
+    .kpi .label{color:var(--muted); font-size:12px}
+    .kpi .value{font-size:28px; font-weight:800; margin-top:6px}
+    .pill{font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid #2a3358; background:#0e1630; color:var(--muted)}
+    .pill.ok{color:#d7ffe9; background:#0f2b1a; border-color:#1e6d3a}
+    .pill.warn{color:#fff4d6; background:#2b2410; border-color:#6d5a1e}
+    .pill.bad{color:#ffe6e6; background:#2b1310; border-color:#6d1e1e}
+
+    table{width:100%; border-collapse:separate; border-spacing:0}
+    th, td{padding:10px 12px; border-bottom:1px solid #243063; text-align:left}
+    th{color:#adc0ff; font-weight:700; font-size:13px}
+    tr:hover td{background:#0e1739}
+    .tag{font-size:12px; padding:4px 8px; border-radius:10px; background:#162147; border:1px solid #30407c; color:#bfcbff}
+
+    .toolbar{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+    .toolbar input, .toolbar select{height:36px; border-radius:10px; border:1px solid #2a3358; background:#0f1835; color:var(--text); padding:0 10px}
+
+    /* login modal */
+    .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(3,6,12,.6); backdrop-filter: blur(6px)}
+    .modal.show{display:flex}
+    .card{width:min(480px, 92vw); background:linear-gradient(180deg,#0f1733,#0b1228); border:1px solid #2a3358; border-radius:18px; box-shadow:var(--shadow)}
+    .card .card-body{padding:18px}
+    .input{width:100%; height:44px; border-radius:12px; border:1px solid #2a3358; background:#0f1835; color:var(--text); padding:0 12px}
+    .input:focus{outline:none; box-shadow:0 0 0 6px var(--ring)}
+    .muted{color:var(--muted)}
+
+    /* responsive */
+    @media (max-width: 1024px){
+      .kpis{grid-template-columns: repeat(2, minmax(0,1fr))}
+      .grid.cols-3{grid-template-columns: repeat(2, minmax(0,1fr))}
+      .grid.cols-4{grid-template-columns: repeat(2, minmax(0,1fr))}
+    }
+    @media (max-width: 760px){
+      main{grid-template-columns: 1fr}
+      nav{position:static}
+      header{gap:6px}
+      .search{display:none}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div class="title">Student Portal</div>
+      </div>
+      <div class="search" role="search">
+        <input id="globalSearch" type="text" placeholder="Search courses, announcements, grades… ( / )" aria-label="Search" />
+        <button class="btn ghost" id="clearSearch" title="Clear (Esc)">Clear</button>
+      </div>
+      <div class="userbar">
+        <span id="userName" class="pill">Not signed in</span>
+        <button class="btn" id="btnToggleTheme" title="Toggle theme">Theme</button>
+        <button class="btn primary" id="btnLogin">Sign In</button>
+      </div>
+    </header>
+
+    <main>
+      <nav class="panel" aria-label="Sections">
+        <ul class="navlist" id="nav">
+          <li><button class="navbtn active" data-page="dashboard">🏠 Dashboard</button></li>
+          <li><button class="navbtn" data-page="attendance">✅ Attendance</button></li>
+          <li><button class="navbtn" data-page="courses">📚 Courses</button></li>
+          <li><button class="navbtn" data-page="grades">📊 Grades</button></li>
+          <li><button class="navbtn" data-page="timetable">🗓️ Timetable</button></li>
+          <li><button class="navbtn" data-page="announcements">📢 Announcements</button></li>
+          <li><button class="navbtn" data-page="profile">👤 Profile</button></li>
+          <li><button class="navbtn" data-page="settings">⚙️ p3 Settings</button></li>
+        </ul>
+      </nav>
+
+      <section id="page" class="grid gap">
+        <!-- Dynamic page content injected here -->
+      </section>
+    </main>
+  </div>
+
+  <!-- Login Modal -->
+  <div class="modal" id="loginModal" aria-modal="true" role="dialog" aria-labelledby="loginTitle">
+    <div class="card" role="document">
+      <div class="head" style="padding:14px 18px; border-bottom:1px solid #243063">
+        <strong id="loginTitle">Sign in</strong>
+        <button class="btn ghost" id="closeLogin">✕</button>
+      </div>
+      <div class="card-body">
+        <div class="muted" style="margin-bottom:12px">Demo credentials are prefilled. You can change them.</div>
+        <form id="loginForm">
+          <label>Email<br>
+            <input class="input" type="email" id="email" value="student@example.com" required />
+          </label>
+          <div style="height:10px"></div>
+          <label>Password<br>
+            <input class="input" type="password" id="password" value="1234" required />
+          </label>
+          <div style="height:14px"></div>
+          <button class="btn primary" type="submit" style="width:100%">Continue</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <template id="tpl-dashboard">
+    <div class="panel">
+      <div class="head">
+        <strong>Overview</strong>
+        <span class="pill" id="today"></span>
+      </div>
+      <div class="body">
+        <div class="kpis">
+          <div class="kpi"><div class="label">Attendance</div><div class="value" id="kpiAttendance">—</div><div class="muted">this semester</div></div>
+          <div class="kpi"><div class="label">GPA</div><div class="value" id="kpiGpa">—</div><div class="muted">weighted</div></div>
+          <div class="kpi"><div class="label">Credits</div><div class="value" id="kpiCredits">—</div><div class="muted">earned</div></div>
+          <div class="kpi"><div class="label">Tasks</div><div class="value" id="kpiTasks">—</div><div class="muted">open items</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid cols-2">
+      <div class="panel">
+        <div class="head"><strong>Upcoming</strong><span class="pill warn">Next 7 days</span></div>
+        <div class="body" id="upcomingList"></div>
+      </div>
+      <div class="panel">
+        <div class="head"><strong>To‑Do</strong>
+          <div class="toolbar">
+            <input id="todoInput" placeholder="Add a task and press Enter" />
+          </div>
+        </div>
+        <div class="body" id="todoList"></div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-attendance">
+    <div class="panel">
+      <div class="head">
+        <strong>Attendance</strong>
+        <div class="toolbar">
+          <input type="date" id="attDate" />
+          <select id="attCourse"></select>
+          <button class="btn" id="markPresent">Mark Present</button>
+          <button class="btn ghost" id="markAbsent">Mark Absent</button>
+        </div>
+      </div>
+      <div class="body">
+        <table>
+          <thead><tr><th>Date</th><th>Course</th><th>Status</th><th></th></tr></thead>
+          <tbody id="attTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-courses">
+    <div class="panel">
+      <div class="head">
+        <strong>Courses</strong>
+        <div class="toolbar">
+          <input id="courseSearch" placeholder="Filter by code or name" />
+        </div>
+      </div>
+      <div class="body">
+        <table>
+          <thead><tr><th>Code</th><th>Course</th><th>Faculty</th><th>Credits</th><th>Type</th></tr></thead>
+          <tbody id="courseTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-grades">
+    <div class="panel">
+      <div class="head"><strong>Grades</strong><span class="pill" id="gradeSummary"></span></div>
+      <div class="body">
+        <table>
+          <thead><tr><th>Course</th><th>Assessment</th><th>Weight %</th><th>Score</th></tr></thead>
+          <tbody id="gradeTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-timetable">
+    <div class="panel">
+      <div class="head"><strong>Timetable</strong>
+        <div class="toolbar">
+          <select id="daySelect"></select>
+        </div>
+      </div>
+      <div class="body" id="timetable"></div>
+    </div>
+  </template>
+
+  <template id="tpl-announcements">
+    <div class="panel">
+      <div class="head"><strong>Announcements</strong>
+        <div class="toolbar">
+          <button class="btn" id="addAnn">Add</button>
+        </div>
+      </div>
+      <div class="body" id="annList"></div>
+    </div>
+  </template>
+
+  <template id="tpl-profile">
+    <div class="panel">
+      <div class="head"><strong>Profile</strong></div>
+      <div class="body">
+        <div class="grid cols-2">
+          <div>
+            <div style="font-size:22px; font-weight:800" id="profName">—</div>
+            <div class="muted" id="profEmail">—</div>
+            <div style="height:10px"></div>
+            <div class="tag" id="profId">—</div>
+          </div>
+          <div>
+            <label>Display name
+              <input class="input" id="displayName" />
+            </label>
+            <div style="height:10px"></div>
+            <button class="btn primary" id="saveProfile">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-settings">
+    <div class="panel">
+      <div class="head"><strong>Settings</strong></div>
+      <div class="body">
+        <label><input type="checkbox" id="toggleDense"> Compact tables</label>
+        <div style="height:10px"></div>
+        <button class="btn" id="resetDemo">Reset demo data</button>
+      </div>
+    </div>
+  </template>
+
+  <script>
+  // ---------- Tiny state & helpers ----------
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => Array.from(document.querySelectorAll(sel));
+  const store = {
+    get(k, def){ try{ return JSON.parse(localStorage.getItem(k)) ?? def }catch{return def} },
+    set(k, v){ localStorage.setItem(k, JSON.stringify(v)) }
+  };
+
+  const demo = {
+    user: { id: "STD24001", name: "Alex Student", email: "student@example.com" },
+    courses: [
+      { code:"CSE101", name:"Programming Fundamentals", faculty:"Dr. Rao", credits:4, type:"Core" },
+      { code:"MAT102", name:"Discrete Mathematics", faculty:"Prof. Iyer", credits:3, type:"Core" },
+      { code:"PHY103", name:"Applied Physics", faculty:"Dr. Sen", credits:3, type:"Lab" },
+      { code:"HUM104", name:"Professional Communication", faculty:"Ms. Kapoor", credits:2, type:"Elective" }
+    ],
+    assessments:[
+      { course:"CSE101", what:"Quiz 1", weight:10, score:9.0 },
+      { course:"CSE101", what:"Midterm", weight:30, score:26.5 },
+      { course:"CSE101", what:"Project", weight:20, score:18.0 },
+      { course:"CSE101", what:"Final", weight:40, score:35.0 },
+      { course:"MAT102", what:"Midterm", weight:40, score:30.0 },
+      { course:"MAT102", what:"Final", weight:60, score:50.0 },
+      { course:"PHY103", what:"Lab Eval", weight:50, score:47.0 },
+      { course:"PHY103", what:"Viva", weight:50, score:44.0 },
+      { course:"HUM104", what:"Essay", weight:50, score:45.0 },
+      { course:"HUM104", what:"Presentation", weight:50, score:46.0 },
+    ],
+    attendance: [], // {date, course, present}
+    events:[
+      { when: offsetDay(1), text:"CSE101 Project milestone due" },
+      { when: offsetDay(3), text:"MAT102 practice test" },
+      { when: offsetDay(5), text:"Sports meet" },
+    ],
+    announcements:[
+      { when: isoToday(), text:"Welcome to Semester 3!" },
+      { when: offsetDay(-2), text:"Library timings extended till 8 PM" },
+    ],
+    todos:["Revise recursion", "Buy lab notebook"]
+  };
+
+  function isoToday(){ return new Date().toISOString().slice(0,10) }
+  function offsetDay(n){ const d = new Date(); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10) }
+  function fmt(d){ return new Date(d + 'T00:00').toLocaleDateString([], {year:'numeric', month:'short', day:'numeric'}) }
+
+  // load or init demo data
+  const data = store.get('portal-data', null) ?? (()=>{ store.set('portal-data', demo); return structuredClone(demo) })();
+
+  // ---------- Simple router ----------
+  const routes = {
+    dashboard: renderDashboard,
+    attendance: renderAttendance,
+    courses: renderCourses,
+    grades: renderGrades,
+    timetable: renderTimetable,
+    announcements: renderAnnouncements,
+    profile: renderProfile,
+    settings: renderSettings,
+  };
+
+  function goto(page){
+    const tpl = document.getElementById('tpl-' + page);
+    const host = document.getElementById('page');
+    host.innerHTML = tpl.innerHTML;
+    $$('#nav .navbtn').forEach(b=> b.classList.toggle('active', b.dataset.page === page));
+    routes[page]?.();
+  }
+
+  // ---------- Header actions ----------
+  $('#btnLogin').addEventListener('click', ()=> toggleModal(true));
+  $('#closeLogin').addEventListener('click', ()=> toggleModal(false));
+  $('#loginModal').addEventListener('click', (e)=>{ if(e.target.id==='loginModal') toggleModal(false) });
+  function toggleModal(show){ $('#loginModal').classList.toggle('show', !!show) }
+
+  $('#loginForm').addEventListener('submit', e=>{
+    e.preventDefault();
+    const email = $('#email').value.trim();
+    const name = email.split('@')[0].replace(/\.|_/g,' ').replace(/\b\w/g, s=>s.toUpperCase()) || 'Student';
+    data.user = { id: data.user?.id || 'STD24001', name, email };
+    store.set('portal-data', data);
+    renderUserBar();
+    toggleModal(false);
+  });
+
+  function renderUserBar(){
+    $('#userName').textContent = data.user?.name || 'Guest';
+    $('#profName')?.append?.(); // noop if not present
+  }
+
+  // Theme toggle
+  $('#btnToggleTheme').addEventListener('click', ()=>{
+    const isLight = document.body.dataset.theme === 'light';
+    document.body.dataset.theme = isLight ? '' : 'light';
+  });
+
+  // Search keyboard shortcuts
+  document.addEventListener('keydown', e=>{
+    if(e.key === '/' && document.activeElement.tagName !== 'INPUT'){ e.preventDefault(); $('#globalSearch').focus() }
+    if(e.key === 'Escape'){ $('#globalSearch').value=''; onGlobalSearch('') }
+  });
+  $('#clearSearch').addEventListener('click', ()=>{ $('#globalSearch').value=''; onGlobalSearch('') });
+  $('#globalSearch').addEventListener('input', e=> onGlobalSearch(e.target.value));
+  function onGlobalSearch(q){
+    const val = q.toLowerCase().trim();
+    // simple filter: highlight rows in courses/announcements/grades
+    $$('#page table tbody tr').forEach(tr=>{
+      tr.style.outline = tr.textContent.toLowerCase().includes(val) ? '1px solid #3d56ff' : 'none';
+    });
+  }
+
+  // ---------- Renderers ----------
+  function renderDashboard(){
+    $('#today').textContent = fmt(isoToday());
+    // KPI Attendance
+    const att = data.attendance;
+    const byCourse = Object.groupBy ? Object.groupBy(att, r=>r.course) : groupBy(att, r=>r.course);
+    const rates = Object.values(byCourse).map(list=>{
+      const p = list.filter(x=>x.present).length; return p / list.length || 0;
+    });
+    const attendanceRate = rates.length ? Math.round((rates.reduce((a,b)=>a+b,0)/rates.length)*100) : 0;
+    $('#kpiAttendance').textContent = attendanceRate + '%';
+
+    // KPI GPA (simple 10-point scale mapping)
+    const cg = calcCourseGrades();
+    const gpa = cg.length ? (cg.reduce((a,b)=>a+b.gpa,0) / cg.length).toFixed(2) : '—';
+    $('#kpiGpa').textContent = gpa;
+
+    // Credits
+    $('#kpiCredits').textContent = data.courses.reduce((a,c)=>a+c.credits,0);
+
+    // Tasks
+    $('#kpiTasks').textContent = data.todos.length;
+
+    // Upcoming
+    const list = data.events
+      .filter(e=> new Date(e.when) >= new Date(isoToday()) )
+      .sort((a,b)=> a.when.localeCompare(b.when))
+      .slice(0,6)
+      .map(e=> `<div style="padding:10px 0; border-bottom:1px solid #243063"><div>${e.text}</div><div class="muted">${fmt(e.when)}</div></div>`)
+      .join('');
+    $('#upcomingList').innerHTML = list || '<div class="muted">No upcoming events.</div>';
+
+    // To‑do
+    const renderTodos = ()=>{
+      $('#todoList').innerHTML = data.todos.map((t,i)=>
+        `<div style="display:flex; gap:10px; align-items:center; padding:6px 0">
+           <input type="checkbox" aria-label="Done" onchange="markDone(${i})" />
+           <div style="flex:1">${escapeHtml(t)}</div>
+           <button class="btn ghost" onclick="delTodo(${i})">Delete</button>
+         </div>`).join('');
+    };
+    window.delTodo = (i)=>{ data.todos.splice(i,1); store.set('portal-data', data); renderTodos() };
+    window.markDone = (i)=>{ data.todos[i] = '✓ ' + data.todos[i]; store.set('portal-data', data); renderTodos() };
+    $('#todoInput').addEventListener('keydown', e=>{
+      if(e.key==='Enter' && e.target.value.trim()){ data.todos.unshift(e.target.value.trim()); e.target.value=''; store.set('portal-data', data); renderTodos() }
+    });
+    renderTodos();
+  }
+
+  function renderAttendance(){
+    // default date & course options
+    $('#attDate').value = isoToday();
+    const sel = $('#attCourse');
+    sel.innerHTML = data.courses.map(c=>`<option>${c.code}</option>`).join('');
+
+    const renderRows = ()=>{
+      const rows = data.attendance
+        .sort((a,b)=> b.date.localeCompare(a.date))
+        .map((r,i)=>`<tr>
+          <td>${fmt(r.date)}</td><td>${r.course}</td>
+          <td>${r.present? '<span class="pill ok">Present</span>' : '<span class="pill bad">Absent</span>'}</td>
+          <td><button class="btn ghost" onclick="delAtt(${i})">Delete</button></td>
+        </tr>`).join('');
+      $('#attTable').innerHTML = rows || `<tr><td colspan="4" class="muted">No records yet.</td></tr>`;
+    };
+    window.delAtt = (i)=>{ data.attendance.splice(i,1); store.set('portal-data', data); renderRows() };
+
+    $('#markPresent').addEventListener('click', ()=> addAtt(true));
+    $('#markAbsent').addEventListener('click', ()=> addAtt(false));
+    function addAtt(present){
+      const rec = { date: $('#attDate').value, course: sel.value, present };
+      if(!rec.date) return alert('Pick a date');
+      data.attendance.push(rec); store.set('portal-data', data); renderRows();
+    }
+
+    renderRows();
+  }
+
+  function renderCourses(){
+    const tbody = $('#courseTable');
+    const draw = list => tbody.innerHTML = list.map(c=>
+      `<tr><td>${c.code}</td><td>${c.name}</td><td>${c.faculty}</td><td>${c.credits}</td><td><span class="tag">${c.type}</span></td></tr>`
+    ).join('');
+    draw(data.courses);
+    $('#courseSearch').addEventListener('input', e=>{
+      const q = e.target.value.toLowerCase();
+      draw(data.courses.filter(c=> [c.code,c.name,c.faculty,c.type].join(' ').toLowerCase().includes(q) ));
+    });
+  }
+
+  function calcCourseGrades(){
+    const groups = {};
+    for(const a of data.assessments){
+      groups[a.course] ??= []; groups[a.course].push(a);
+    }
+    return Object.entries(groups).map(([course, list])=>{
+      const pct = list.reduce((acc, x)=> acc + (x.score/x.weight)*x.weight, 0);
+      const grade10 = Math.round(pct)/10; // out of 10
+      // GPA mapping simple: 9-10 -> 10, 8-9 -> 9, ...
+      const gpa = Math.max(0, Math.min(10, Math.round(grade10)));
+      return { course, pct, gpa };
+    });
+  }
+
+  function renderGrades(){
+    const tbody = $('#gradeTable');
+    tbody.innerHTML = data.assessments.map(a=>
+      `<tr><td>${a.course}</td><td>${a.what}</td><td>${a.weight}</td><td>${a.score}</td></tr>`
+    ).join('');
+    const cg = calcCourseGrades();
+    const summary = cg.map(g=> `${g.course}: ${g.gpa}/10`).join(' · ');
+    $('#gradeSummary').textContent = summary || 'No grades yet';
+  }
+
+  function renderTimetable(){
+    const days = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+    const slots = {
+      Monday:    [['09:00','CSE101'],['11:00','MAT102'],['14:00','PHY103']],
+      Tuesday:   [['09:00','HUM104'],['13:00','CSE101']],
+      Wednesday: [['10:00','MAT102'],['12:00','PHY103']],
+      Thursday:  [['09:00','CSE101'],['11:00','Lab PHY103']],
+      Friday:    [['10:00','HUM104'],['14:00','Seminar']]
+    };
+    const sel = $('#daySelect'); sel.innerHTML = days.map(d=>`<option>${d}</option>`).join('');
+    const host = $('#timetable');
+    const draw = d=>{
+      host.innerHTML = (slots[d]||[]).map(([t,c])=>
+        `<div style="padding:12px; margin:8px 0; border:1px solid #2a3358; border-radius:12px">`+
+        `<div style="font-weight:700">${c}</div><div class="muted">${t}</div></div>`
+      ).join('') || '<div class="muted">No classes.</div>';
+    };
+    sel.addEventListener('change', e=> draw(e.target.value));
+    draw(days[new Date().getDay()-1] || 'Monday');
+  }
+
+  function renderAnnouncements(){
+    const host = $('#annList');
+    const draw = ()=> host.innerHTML = data.announcements
+      .sort((a,b)=> b.when.localeCompare(a.when))
+      .map(a=> `<div style="padding:10px 0; border-bottom:1px solid #243063"><div>${escapeHtml(a.text)}</div><div class="muted">${fmt(a.when)}</div></div>`)
+      .join('');
+    draw();
+    $('#addAnn').addEventListener('click', ()=>{
+      const text = prompt('Announcement'); if(!text) return;
+      data.announcements.unshift({ when: isoToday(), text }); store.set('portal-data', data); draw();
+    });
+  }
+
+  function renderProfile(){
+    $('#profName').textContent = data.user?.name || 'Student';
+    $('#profEmail').textContent = data.user?.email || '—';
+    $('#profId').textContent = data.user?.id || '—';
+    $('#displayName').value = data.user?.name || '';
+    $('#saveProfile').addEventListener('click', ()=>{
+      data.user.name = $('#displayName').value.trim() || data.user.name;
+      store.set('portal-data', data); renderUserBar(); alert('Saved');
+    });
+  }
+
+  function renderSettings(){
+    const dense = store.get('portal-dense', false);
+    $('#toggleDense').checked = dense;
+    document.body.classList.toggle('dense', dense);
+    $('#toggleDense').addEventListener('change', e=>{
+      store.set('portal-dense', e.target.checked);
+      document.body.classList.toggle('dense', e.target.checked);
+    });
+    $('#resetDemo').addEventListener('click', ()=>{
+      if(confirm('Reset all demo data?')){ localStorage.removeItem('portal-data'); location.reload() }
+    });
+  }
+
+  function groupBy(arr, keyFn){
+    const m = {}; for(const x of arr){ const k = keyFn(x); (m[k] ??= []).push(x) } return m;
+  }
+  function escapeHtml(str){
+    return str.replace(/[&<>\"]/g, s=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]) );
+  }
+
+  // ---------- init ----------
+  renderUserBar();
+  $$('#nav .navbtn').forEach(b=> b.addEventListener('click', ()=> goto(b.dataset.page)));
+  goto('dashboard');
+
+  </script>
+</body>
+</html>
